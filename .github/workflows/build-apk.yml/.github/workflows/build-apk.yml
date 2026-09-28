@@ -1,0 +1,43 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Find project ZIP
+        run: |
+          ZIP_FILE=$(find . -maxdepth 2 -type f -name "*.zip" | head -n 1)
+          echo "ZIP_FILE=$ZIP_FILE" >> "$GITHUB_ENV"
+
+      - name: Extract Android project
+        run: |
+          mkdir -p android-project
+          unzip -q "$ZIP_FILE" -d android-project
+
+      - name: Find Gradle project
+        run: |
+          GRADLEW=$(find android-project -type f -name "gradlew" | head -n 1)
+          echo "GRADLEW=$GRADLEW" >> "$GITHUB_ENV"
+          chmod +x "$GRADLEW"
+
+      - name: Build Debug APK
+        run: |
+          PROJECT_DIR=$(dirname "$GRADLEW")
+          cd "$PROJECT_DIR"
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: khayl-wa-baroud-apk
+          path: android-project/**/build/outputs/apk/debug/*.apk
