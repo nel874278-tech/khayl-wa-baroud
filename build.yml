@@ -1,4 +1,4 @@
-name: Build Khayl Wa Baroud APK
+name: Build Khayl Wa Al Baroud APK
 
 on:
   workflow_dispatch:
